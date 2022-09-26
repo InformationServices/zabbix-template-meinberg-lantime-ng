@@ -16,18 +16,18 @@ Currently only key indicators are monitored
 
 | Item | Key | Description |
 | ---- | --- | ----------- |
-| Current GPS receiver position | mbgLtNgRefclockGpsPos | Position of the device itself (as reported). Currently not used for much but can be used to populate inventory fields. NOTE: this is the location of the antena itself and depending on cable length might be quite different than the actual device location itself |
-| Client tracking enabled | mbgLtNgCfgNtpEnableClientCounter | Indicator if client tracking is enabled. See notes for usage and reason |
-| Daily NTP Clients | mbgLtNgNtpCCTodaysClients | Number of unique NTP clients that have contacted the device. Needs Client tracking, resets daily |
-| Firmware version | mbgLtNgFirmwareVersion | Version of the installed firmware |
-| Internal Temperature | mbgLtNgSysTempCelsius | Temperature of the device itself. Most are passively cooled |
-| NTP Clock Stratum | mbgLtNgNtpStratum | Clock Stratum |
-| NTP Requests Per second | mbgLtNgNtpCCTotalRequests | Number of requests per second (via preprocessing) |
-| Number of RefClocks | mbgLtNgNumberOfRefclocks | Number of hardware reference clocks |
-| Offset in ms from NTP | mbgLtNgNtpRefclockOffset | Offset from the true NTP |
-| Refclock Mode | mbgLtRefClockMode | State of the refclock (is it synced or not) |
-| Serial Number | mbgLtNgSerialNumber | Serial number of the device |
-| State of GPS FIX | mbgLtRefGpsStateVal | The status of the GPS refclock |
+| Current GPS receiver position | `mbgLtNgRefclockGpsPos` | Position of the device itself (as reported). Currently not used for much but can be used to populate inventory fields. NOTE: this is the location of the antena itself and depending on cable length might be quite different than the actual device location itself |
+| Client tracking enabled | `mbgLtNgCfgNtpEnableClientCounter` | Indicator if client tracking is enabled. See notes for usage and reason |
+| Daily NTP Clients | `mbgLtNgNtpCCTodaysClients` | Number of unique NTP clients that have contacted the device. Needs Client tracking, resets daily |
+| Firmware version | `mbgLtNgFirmwareVersion` | Version of the installed firmware |
+| Internal Temperature | `mbgLtNgSysTempCelsius` | Temperature of the device itself. Most are passively cooled |
+| NTP Clock Stratum | `mbgLtNgNtpStratum` | Clock Stratum |
+| NTP Requests Per second | `mbgLtNgNtpCCTotalRequests` | Number of requests per second (via preprocessing) |
+| Number of RefClocks | `mbgLtNgNumberOfRefclocks` | Number of hardware reference clocks |
+| Offset in ms from NTP | `mbgLtNgNtpRefclockOffset` | Offset from the true NTP |
+| Refclock Mode | `mbgLtRefClockMode` | State of the refclock (is it synced or not) |
+| Serial Number | `mbgLtNgSerialNumber` | Serial number of the device |
+| State of GPS FIX | `mbgLtRefGpsStateVal` | The status of the GPS refclock |
 
 ## What items are autodiscovered
 Currently there are LLD's configured for:
