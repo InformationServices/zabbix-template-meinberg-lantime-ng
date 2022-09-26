@@ -1,0 +1,1180 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-09-26T08:57:35Z'
+  groups:
+    -
+      uuid: 5c54cb8f927a4c5a90622e1c7bd0bda5
+      name: NTP
+    -
+      uuid: 3d9f4d59536247f0a622967222082729
+      name: Templates/NTP
+  templates:
+    -
+      uuid: 836783a014c446f286b3a1c1a4a828a6
+      template: 'Meinberg LANTIME NG'
+      name: 'Meinberg LANTIME NG'
+      description: |
+        SNMP template for Meinberg devices
+
+        MBG-SNMP-LTNG-MIB - REVISION  "202201181500Z"
+      groups:
+        -
+          name: NTP
+        -
+          name: Templates/NTP
+      items:
+        -
+          uuid: 4057b36b175c41c5948cf511f9537d21
+          name: 'Client tracking enabled'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgCfgNtpEnableClientCounter.0'
+          key: mbgLtNgCfgNtpEnableClientCounter
+          delay: 1h
+          trends: '0'
+          description: 'Is client tracking (providing client/request stats) enabled'
+          tags:
+            -
+              tag: Application
+              value: Info
+        -
+          uuid: 6e5c184377094447b55df75f4b8061f6
+          name: 'Firmware version'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgFirmwareVersion.0'
+          key: mbgLtNgFirmwareVersion
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'installed LANTIME firmware version'
+          inventory_link: OS_SHORT
+          tags:
+            -
+              tag: Application
+              value: Info
+          triggers:
+            -
+              uuid: b4df6ddc44e240d1aa910841513893a2
+              expression: '(last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion,#1)<>last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion,#2))>0'
+              name: 'Firmware Version Changed'
+              opdata: mbgLtNgFirmwareVersion
+              priority: WARNING
+              description: 'Firmware version has changed'
+        -
+          uuid: 7fdf22a1b6bc4cf3b1a4cb23459b296b
+          name: 'Daily NTP Clients'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgNtpCCTodaysClients.0'
+          key: mbgLtNgNtpCCTodaysClients
+          delay: 5m
+          description: 'total number of different clients requesting time (resets on read)'
+          tags:
+            -
+              tag: Application
+              value: Clients
+        -
+          uuid: e7289ef02f324640bf98a7e8b3d18e81
+          name: 'NTP Requests Per second'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgNtpCCTotalRequests.0'
+          key: mbgLtNgNtpCCTotalRequests
+          delay: 5m
+          description: 'total total requests (to per second). Resets on read.'
+          preprocessing:
+            -
+              type: CHANGE_PER_SECOND
+              parameters:
+                - ''
+          tags:
+            -
+              tag: Application
+              value: Clients
+        -
+          uuid: e45530ee9fe34ff5bed87478684fee49
+          name: 'Offset in ms from NTP'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgNtpRefclockOffset.0'
+          key: mbgLtNgNtpRefclockOffset
+          delay: 5m
+          value_type: FLOAT
+          units: ms
+          description: 'Time offset between the current selected refclock and time of NTP as string in milliseconds'
+          preprocessing:
+            -
+              type: RTRIM
+              parameters:
+                - ' ms'
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+        -
+          uuid: a8bec29122f441e2b5ced071b01da72c
+          name: 'NTP Clock Stratum'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgNtpStratum.0'
+          key: mbgLtNgNtpStratum
+          delay: 5m
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+          triggers:
+            -
+              uuid: 3eca1de1c17047278e9270f8582203cb
+              expression: 'avg(/Meinberg LANTIME NG/mbgLtNgNtpStratum,#5)>3'
+              name: 'Clock Stratum unreliable'
+              priority: HIGH
+              description: |
+                Trigger on stratum higher than 3 for the last 5 checks.
+
+                By default Stratum when unsynced is 12. The trigger will fire in 2 cases:
+
+                 * First start (full cold boot) - no ephemeridis and no sync
+                 * Severe degradation of sync and/or severe faults
+            -
+              uuid: e0fa024d15c04df1a44daa0c1e5f9a4a
+              expression: 'last(/Meinberg LANTIME NG/mbgLtNgNtpStratum)=12'
+              name: 'Time Not synced'
+              priority: WARNING
+        -
+          uuid: 1f9fcb778c7f431dbfd25a960a92ebed
+          name: 'Number of RefClocks'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgNumberOfRefclocks.0'
+          key: mbgLtNgNumberOfRefclocks
+          delay: 1h
+          description: 'Number of reference clocks Available. Includes all possible ones (e.g. gps + irig)'
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+        -
+          uuid: 6a3b99ee8ea648298db394619b13cd05
+          name: 'Current GPS receiver position'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockGpsPos.0'
+          key: mbgLtNgRefclockGpsPos
+          delay: 1h
+          trends: '0'
+          value_type: TEXT
+          description: '"shows current GPS receiver position"'
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+        -
+          uuid: e9aca9c7267f4ac5b8e0c6045a2a4fbd
+          name: 'state of GPS refclock connected to NTP time server as value'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockState.1'
+          key: mbgLtNgRefclockState
+          delay: 5m
+          description: |
+            "state of GPS refclock conneted to NTP time server as value
+                      0: not available
+                      1: synchronized
+                      2: not synchronized"
+          valuemap:
+            name: 'Meinberg mbgLtNgRefclockState MAP'
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+        -
+          uuid: cc26ed106fc14cf4923a5d737c1135e4
+          name: 'Serial Number'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgSerialNumber.0'
+          key: mbgLtNgSerialNumber
+          delay: 24h
+          trends: '0'
+          value_type: TEXT
+          description: 'LANTIME serial number'
+          inventory_link: SERIALNO_A
+          tags:
+            -
+              tag: Application
+              value: Info
+        -
+          uuid: 5e79e243c2404253a95321250ebe3c0b
+          name: 'Internal Temperature'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgSysTempCelsius.0'
+          key: mbgLtNgSysTempCelsius
+          delay: 5m
+          units: C
+          description: 'temperature in degree Celsius'
+          tags:
+            -
+              tag: Application
+              value: Health
+        -
+          uuid: bbd311f503be4abb84ccc2ff171f7b45
+          name: 'Refclock Mode'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LT-MIB::mbgLtRefClockModeVal.0'
+          key: mbgLtRefClockMode
+          delay: 5m
+          description: |
+            "current mode of refclock connected to NTP time server as value"
+                --- " 0: not available"
+                --- " 1: Normal Operation"
+                --- " 2: Tracking/Searching"
+                --- " 3: Antenna Faulty"
+                --- " 4: Warm Boot"
+                --- " 5: Cold Boot"
+                --- " 6: Antenna Short Circuit"
+          valuemap:
+            name: 'Meinberg mbgLtRefClockModeVal MAP'
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+          triggers:
+            -
+              uuid: 16194c82e79a426e8358f4b15f12e10c
+              expression: 'last(/Meinberg LANTIME NG/mbgLtRefClockMode)=3 or last(/Meinberg LANTIME NG/mbgLtRefClockMode)=6'
+              name: 'Antena Fault'
+              priority: HIGH
+              description: 'Trigger on Antena Fault or ShortCircuit'
+        -
+          uuid: b9f366cec62047df80fe640d1f3e04a0
+          name: 'State of GPS FIX'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LT-MIB::mbgLtRefGpsStateVal.0'
+          key: mbgLtRefGpsStateVal
+          delay: 5m
+          description: 'Current State of GPS refclock connected to NTP time server'
+          valuemap:
+            name: 'Meinberg mbgLtRefGpsState MAP'
+          tags:
+            -
+              tag: Application
+              value: ReferenceClock
+      discovery_rules:
+        -
+          uuid: 2b56de70ce4c4cc8ba5dd6153043c29b
+          name: 'Power Supplies'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#PSINDEX},MBG-SNMP-LTNG-MIB::mbgLtNgSysPsIndex,{#PSSTATUS},MBG-SNMP-LTNG-MIB::mbgLtNgSysPsStatus]'
+          key: mbgLtNgPS
+          delay: 12h
+          item_prototypes:
+            -
+              uuid: 3b946583d32d47c99065d8f8e6adfc71
+              name: 'Power supply {#SNMPINDEX} Status'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgSysPsStatus.{#SNMPINDEX}'
+              key: 'mbgLtNgSysPsStatus[{#PSINDEX}]'
+              delay: 5m
+              trends: '0'
+              valuemap:
+                name: 'Meinberg mbgLtNgSysPsStatus MAP'
+              tags:
+                -
+                  tag: Application
+                  value: Health
+              trigger_prototypes:
+                -
+                  uuid: c2bf87fcb6984cd193b3bed329ee9080
+                  expression: 'last(/Meinberg LANTIME NG/mbgLtNgSysPsStatus[{#PSINDEX}],#2)<>2'
+                  name: 'PowerSupply {#PSINDEX} DOWN'
+                  priority: HIGH
+                  description: 'Power supply is down. Replace as needed'
+        -
+          uuid: 0f915a685eff4bdf9e7185cb2ba3069f
+          name: Refclocks
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#REFINDEX},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockIndex,{#REFTYPE},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockType,{#REFUSE},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockUsage,{#REFSTATE},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockState,{#REFSUBSTATE},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockSubstate,{#REFSUBSTATEA},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockStatusA,{#REFSUBSTATEB},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockStatusB,{#REFADDINFO},MBG-SNMP-LTNG-MIB::mbgLtNgRefclockAdditionalInfo]'
+          key: mbgLtNgRefclocks
+          delay: 12h
+          item_prototypes:
+            -
+              uuid: d9f2060083414a92abe8708cb94f5478
+              name: 'RefClock {#SNMPINDEX} Additional Status'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockAdditionalInfo.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockAdditionalInfo[{#SNMPINDEX}]'
+              delay: 5m
+              description: 'Any additional info (just leap second for now)'
+              valuemap:
+                name: 'Meinberg mbgLtNgRefclockAdditionalInfo MAP'
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: dbf099feb2984a7e84a7c5c7594e5d00
+              name: 'RefClock {#SNMPINDEX} Next Leap Second date'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockLeapSecondDate.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockLeapSecondDate[{#SNMPINDEX}]'
+              delay: 12h
+              trends: '0'
+              value_type: TEXT
+              description: 'Date for next leap second'
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: 9f118501107b415b95f0ba330d588502
+              name: 'RefClock {#SNMPINDEX} MAX Status A'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockMaxStatusA.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockMaxStatusA[{#SNMPINDEX}]'
+              delay: 5m
+              description: |
+                Max status A depending on reflcock
+                          gps         : indicates number of good satellites in view
+                          long wave
+                            - pzf     : correlation
+                            - other   : not supported
+                          irig        : not supported
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: b860b5d0184b45e1a30c406991301407
+              name: 'RefClock {#SNMPINDEX} MAX Status B'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockMaxStatusB.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockMaxStatusB[{#SNMPINDEX}]'
+              delay: 5m
+              description: |
+                Max status B depending on reflcock
+                          gps         : indicates number of good satellites in view
+                          long wave
+                            - pzf     : correlation
+                            - other   : not supported
+                          irig        : not supported
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: f6818505a72d48838b5f92b6b55ce183
+              name: 'RefClock {#SNMPINDEX} State'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockState.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockState[{#SNMPINDEX}]'
+              delay: 5m
+              description: 'General state of the refclock'
+              valuemap:
+                name: 'Meinberg mbgLtNgRefclockState MAP'
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+              trigger_prototypes:
+                -
+                  uuid: 7e30eaf5e4db4d90ba0a01ee6830a35b
+                  expression: 'last(/Meinberg LANTIME NG/mbgLtNgRefclockState[{#SNMPINDEX}],#3)=2'
+                  name: 'RefClock {#REFINDEX} not synced'
+                  priority: AVERAGE
+                  description: 'Refclock either lost sync or is just starting. Manual close is not advised.'
+                  manual_close: 'YES'
+            -
+              uuid: 17b0af284eaf42149bd8df1f1b2b07f4
+              name: 'RefClock {#SNMPINDEX} Status A'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockStatusA.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockStatusA[{#SNMPINDEX}]'
+              delay: 5m
+              description: |
+                status A depending on reflcock
+                          gps         : indicates number of good satellites in view
+                          long wave
+                            - pzf     : correlation
+                            - other   : not supported
+                          irig        : not supported
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: 8c0e06e155fe48f9bb31906b2fed628b
+              name: 'RefClock {#SNMPINDEX} Status B'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockStatusB.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockStatusB[{#SNMPINDEX}]'
+              delay: 5m
+              description: |
+                maximum status B depending on reflcock
+                          gps         : not supported
+                          long wave
+                            - all     : field strength
+                          irig        : not supported
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: 1bff88d367d745d7b4d3395acb5faa86
+              name: 'RefClock {#SNMPINDEX} Detailed State'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockSubstate.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockSubstate[{#SNMPINDEX}]'
+              delay: 5m
+              value_type: FLOAT
+              description: |
+                "more detailed state depending on refclock type
+                          0: no substate available
+                          gps: 1-4
+                          long waves (PZF,WWVB,MSF,...): 50-52 (not supported by all types)
+                          irig: 100-101"
+              valuemap:
+                name: 'Meinberg mbgLtNgRefclockSubstate MAP'
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: e3ef64f9e2b3418d875b96a2ad1dd6b9
+              name: 'RefClock {#SNMPINDEX} Type'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockType.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockType[{#SNMPINDEX}]'
+              delay: 60m
+              description: 'Type of Refclock (check'
+              valuemap:
+                name: 'Meinberg mbgLtNgRefclockType MAP'
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+            -
+              uuid: b55e319b44534ce091c2baed606ccb29
+              name: 'RefClock {#SNMPINDEX} Use'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgRefclockUsage.{#SNMPINDEX}'
+              key: 'mbgLtNgRefclockUsage[{#SNMPINDEX}]'
+              delay: 5m
+              description: 'Usage of refclock'
+              valuemap:
+                name: 'Meinberg mbgLtNgRefclockUsage MAP'
+              tags:
+                -
+                  tag: Application
+                  value: ReferenceClock
+          graph_prototypes:
+            -
+              uuid: 2fc6146a60d142d9bc3b7c218f356000
+              name: 'RefClock {#REFINDEX} Status A'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 1A7C11
+                  item:
+                    host: 'Meinberg LANTIME NG'
+                    key: 'mbgLtNgRefclockStatusA[{#SNMPINDEX}]'
+            -
+              uuid: 062384c16a144c5f9d14cd7015d4084d
+              name: 'RefClock {#REFINDEX} Status B'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 2774A4
+                  item:
+                    host: 'Meinberg LANTIME NG'
+                    key: 'mbgLtNgRefclockStatusB[{#SNMPINDEX}]'
+        -
+          uuid: 918d64d28c634dd0beba1ed28937074a
+          name: Fans
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#FANINDEX},MBG-SNMP-LTNG-MIB::mbgLtNgSysFanIndex,{#FANSTATUS},MBG-SNMP-LTNG-MIB::mbgLtNgSysFanStatus]'
+          key: mbgLtNgSysFan
+          delay: 12h
+          item_prototypes:
+            -
+              uuid: 1f35742793f048c080b26b47fb3feb0a
+              name: 'Fan {#SNMPINDEX} Status'
+              type: SNMP_AGENT
+              snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgSysFanStatus.{#SNMPINDEX}'
+              key: 'mbgLtNgSysFanStatus[{#FANINDEX}]'
+              delay: 5m
+              valuemap:
+                name: 'Meinberg mbgLtNgSysFanStatus MAP'
+              tags:
+                -
+                  tag: Application
+                  value: Health
+              trigger_prototypes:
+                -
+                  uuid: e7f1fcc54c9c46829ec8c5bc2c0b7712
+                  expression: 'last(/Meinberg LANTIME NG/mbgLtNgSysFanStatus[{#FANINDEX}])<>2'
+                  name: 'Fan {#FANINDEX} FAULT'
+                  priority: AVERAGE
+                  description: 'Fan is not operational'
+                  tags:
+                    -
+                      tag: Application
+                      value: Health
+      macros:
+        -
+          macro: '{$MBG_INTERNAL_TEMP_CRITICAL}'
+          value: '72'
+          description: 'Threshold for critical internal temperature'
+        -
+          macro: '{$MBG_INTERNAL_TEMP_HIGH}'
+          value: '62'
+          description: 'Threshold for high internal temperature'
+      valuemaps:
+        -
+          uuid: cd88ef408a95420a95bf2f6f8cf1e03b
+          name: 'Meinberg mbgLtNgRefclockAdditionalInfo MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: leapSecondAnnounced
+        -
+          uuid: 631f47d2f81d46aaa2a5eff6ae3de460
+          name: 'Meinberg mbgLtNgRefclockState MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: synchronized
+            -
+              value: '2'
+              newvalue: notSynchronized
+        -
+          uuid: 83835d81e0824dea8efe674c1d478a2e
+          name: 'Meinberg mbgLtNgRefclockSubstate MAP'
+          mappings:
+            -
+              value: '-1'
+              newvalue: mrsRefNone
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: gpsSync
+            -
+              value: '2'
+              newvalue: gpsTracking
+            -
+              value: '3'
+              newvalue: gpsAntennaDisconnected
+            -
+              value: '4'
+              newvalue: gpsWarmBoot
+            -
+              value: '5'
+              newvalue: gpsColdBoot
+            -
+              value: '6'
+              newvalue: gpsAntennaShortCircuit
+            -
+              value: '50'
+              newvalue: lwNeverSync
+            -
+              value: '51'
+              newvalue: lwNotSync
+            -
+              value: '52'
+              newvalue: lwSync
+            -
+              value: '100'
+              newvalue: tcrNotSync
+            -
+              value: '101'
+              newvalue: tcrSync
+            -
+              value: '149'
+              newvalue: mrsIntOscSync
+            -
+              value: '150'
+              newvalue: mrsGpsSync
+            -
+              value: '151'
+              newvalue: mrs10MhzSync
+            -
+              value: '152'
+              newvalue: mrsPpsInSync
+            -
+              value: '153'
+              newvalue: mrs10MhzPpsInSync
+            -
+              value: '154'
+              newvalue: mrsIrigSync
+            -
+              value: '155'
+              newvalue: mrsNtpSync
+            -
+              value: '156'
+              newvalue: mrsPtpIeee1588Sync
+            -
+              value: '157'
+              newvalue: mrsPtpOverE1Sync
+            -
+              value: '158'
+              newvalue: mrsFixedFreqInSync
+            -
+              value: '159'
+              newvalue: mrsPpsStringSync
+            -
+              value: '160'
+              newvalue: mrsVarFreqGpioSync
+            -
+              value: '161'
+              newvalue: mrsReserved
+            -
+              value: '162'
+              newvalue: mrsDcf77PzfSync
+            -
+              value: '163'
+              newvalue: mrsLongwaveSync
+            -
+              value: '164'
+              newvalue: mrsGlonassGpsSync
+            -
+              value: '165'
+              newvalue: mrsHavequickSync
+            -
+              value: '166'
+              newvalue: mrsExtOscSync
+            -
+              value: '167'
+              newvalue: mrsSyncE
+        -
+          uuid: 369828afcbf74c6fb5ad6eefa3e0d80e
+          name: 'Meinberg mbgLtNgRefclockType MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: Unknown
+            -
+              value: '1'
+              newvalue: gps166
+            -
+              value: '2'
+              newvalue: gps167
+            -
+              value: '3'
+              newvalue: gps167SV
+            -
+              value: '4'
+              newvalue: gps167PC
+            -
+              value: '5'
+              newvalue: gps167PCI
+            -
+              value: '6'
+              newvalue: gps163
+            -
+              value: '7'
+              newvalue: gps168PCI
+            -
+              value: '8'
+              newvalue: gps161
+            -
+              value: '9'
+              newvalue: gps169PCI
+            -
+              value: '10'
+              newvalue: tcr167PCI
+            -
+              value: '11'
+              newvalue: gps164
+            -
+              value: '12'
+              newvalue: gps170PCI
+            -
+              value: '13'
+              newvalue: pzf511
+            -
+              value: '14'
+              newvalue: gps170
+            -
+              value: '15'
+              newvalue: tcr511
+            -
+              value: '16'
+              newvalue: am511
+            -
+              value: '17'
+              newvalue: msf511
+            -
+              value: '18'
+              newvalue: grc170
+            -
+              value: '19'
+              newvalue: gps170PEX
+            -
+              value: '20'
+              newvalue: gps162
+            -
+              value: '21'
+              newvalue: ptp270PEX
+            -
+              value: '22'
+              newvalue: frc511PEX
+            -
+              value: '23'
+              newvalue: gen170
+            -
+              value: '24'
+              newvalue: tcr170PEX
+            -
+              value: '25'
+              newvalue: wwvb511
+            -
+              value: '26'
+              newvalue: mgr170
+            -
+              value: '27'
+              newvalue: jjy511
+            -
+              value: '28'
+              newvalue: pzf600
+            -
+              value: '29'
+              newvalue: tcr600
+            -
+              value: '30'
+              newvalue: gps180
+            -
+              value: '31'
+              newvalue: gln170
+            -
+              value: '32'
+              newvalue: gps180PEX
+            -
+              value: '33'
+              newvalue: tcr180PEX
+            -
+              value: '34'
+              newvalue: pzf180PEX
+            -
+              value: '35'
+              newvalue: mgr180
+            -
+              value: '36'
+              newvalue: msf600
+            -
+              value: '37'
+              newvalue: wwvb600
+            -
+              value: '38'
+              newvalue: jjy600
+            -
+              value: '39'
+              newvalue: gps180HS
+            -
+              value: '40'
+              newvalue: gps180AMC
+            -
+              value: '41'
+              newvalue: esi180
+            -
+              value: '42'
+              newvalue: cpe180
+            -
+              value: '43'
+              newvalue: lno180
+            -
+              value: '44'
+              newvalue: grc180
+            -
+              value: '45'
+              newvalue: liu
+            -
+              value: '46'
+              newvalue: dcf600HS
+            -
+              value: '47'
+              newvalue: dcf600RS
+            -
+              value: '48'
+              newvalue: mri
+            -
+              value: '49'
+              newvalue: bpe
+            -
+              value: '50'
+              newvalue: gln180Pex
+            -
+              value: '51'
+              newvalue: n2x
+            -
+              value: '52'
+              newvalue: rsc180
+            -
+              value: '53'
+              newvalue: lneGb
+            -
+              value: '54'
+              newvalue: lnePpg180
+            -
+              value: '55'
+              newvalue: scg
+            -
+              value: '56'
+              newvalue: mdu300
+            -
+              value: '57'
+              newvalue: sdi
+            -
+              value: '58'
+              newvalue: fdm180
+            -
+              value: '59'
+              newvalue: spt
+            -
+              value: '60'
+              newvalue: pzf180
+            -
+              value: '61'
+              newvalue: rel1000
+            -
+              value: '62'
+              newvalue: hps100
+            -
+              value: '63'
+              newvalue: vsg180
+            -
+              value: '64'
+              newvalue: msf180
+            -
+              value: '65'
+              newvalue: wwvb180
+            -
+              value: '66'
+              newvalue: cpc180
+            -
+              value: '67'
+              newvalue: ctc100
+            -
+              value: '68'
+              newvalue: tcr180
+            -
+              value: '69'
+              newvalue: lue180
+            -
+              value: '70'
+              newvalue: cpc01
+            -
+              value: '71'
+              newvalue: tsu01
+            -
+              value: '72'
+              newvalue: cmc01
+            -
+              value: '73'
+              newvalue: scu01
+            -
+              value: '74'
+              newvalue: fcu01
+            -
+              value: '75'
+              newvalue: mssb100
+            -
+              value: '76'
+              newvalue: lne180sfp
+            -
+              value: '77'
+              newvalue: gts180
+            -
+              value: '78'
+              newvalue: gps180csm
+            -
+              value: '79'
+              newvalue: grc181
+            -
+              value: '80'
+              newvalue: n2x180
+            -
+              value: '81'
+              newvalue: gns180pex
+            -
+              value: '82'
+              newvalue: mdu180
+            -
+              value: '83'
+              newvalue: mdu312
+            -
+              value: '84'
+              newvalue: gps165
+            -
+              value: '85'
+              newvalue: gns181uc
+            -
+              value: '86'
+              newvalue: psx4GE
+            -
+              value: '87'
+              newvalue: rsc180rdu
+            -
+              value: '88'
+              newvalue: cpc200
+            -
+              value: '89'
+              newvalue: fdm180m
+            -
+              value: '90'
+              newvalue: lsg180
+            -
+              value: '91'
+              newvalue: gps190
+            -
+              value: '92'
+              newvalue: gns181
+            -
+              value: '93'
+              newvalue: pio180
+            -
+              value: '94'
+              newvalue: fcm180
+            -
+              value: '95'
+              newvalue: tcr180usb
+            -
+              value: '96'
+              newvalue: ssp100
+            -
+              value: '97'
+              newvalue: gns165
+            -
+              value: '98'
+              newvalue: rsc180rdmp
+            -
+              value: '99'
+              newvalue: gps16x
+            -
+              value: '100'
+              newvalue: mshps100
+            -
+              value: '101'
+              newvalue: bpestm
+            -
+              value: '102'
+              newvalue: vsi180
+            -
+              value: '103'
+              newvalue: gnm181
+            -
+              value: '104'
+              newvalue: rscrduttl
+            -
+              value: '105'
+              newvalue: rsc2000
+            -
+              value: '106'
+              newvalue: fcu200
+            -
+              value: '107'
+              newvalue: rel1000rc
+            -
+              value: '108'
+              newvalue: wsiug2864
+            -
+              value: '109'
+              newvalue: vsg181
+            -
+              value: '110'
+              newvalue: bps2xxx
+            -
+              value: '111'
+              newvalue: bpe2352
+            -
+              value: '112'
+              newvalue: bpe8XXX
+            -
+              value: '113'
+              newvalue: bpe6042
+            -
+              value: '114'
+              newvalue: gns190
+            -
+              value: '115'
+              newvalue: gps180msbc
+            -
+              value: '116'
+              newvalue: gns181msbc
+            -
+              value: '117'
+              newvalue: gns181ucmsbc
+            -
+              value: '118'
+              newvalue: prs181
+            -
+              value: '119'
+              newvalue: ecm180
+            -
+              value: '120'
+              newvalue: mro181
+            -
+              value: '121'
+              newvalue: vsg181msbc
+            -
+              value: '122'
+              newvalue: scg181
+            -
+              value: '123'
+              newvalue: nimbra100
+            -
+              value: '124'
+              newvalue: rsc180scu
+            -
+              value: '125'
+              newvalue: pmu190
+            -
+              value: '126'
+              newvalue: gns190uc
+            -
+              value: '127'
+              newvalue: vmx180
+            -
+              value: '128'
+              newvalue: rcg181
+            -
+              value: '129'
+              newvalue: gns191
+            -
+              value: '130'
+              newvalue: vsg181h
+            -
+              value: '131'
+              newvalue: gps182
+        -
+          uuid: 575ac836834945b4a069da33fccd31aa
+          name: 'Meinberg mbgLtNgRefclockUsage MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: secondary
+            -
+              value: '2'
+              newvalue: compare
+            -
+              value: '3'
+              newvalue: primary
+        -
+          uuid: 8ca10b2aaea2443cac79886975b20227
+          name: 'Meinberg mbgLtNgSysFanError'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: 'no'
+            -
+              value: '2'
+              newvalue: 'yes'
+        -
+          uuid: ec448dadd5fd42568badc47df834a0db
+          name: 'Meinberg mbgLtNgSysFanStatus MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: 'off'
+            -
+              value: '2'
+              newvalue: 'on'
+        -
+          uuid: 4e566035cc1c43a9bd89aa222a4ee3dc
+          name: 'Meinberg mbgLtNgSysPsStatus MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: DOWN
+            -
+              value: '2'
+              newvalue: UP
+        -
+          uuid: b5f8087976a64239ab073bb6ad92e583
+          name: 'Meinberg mbgLtRefClockModeVal MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notAvailable
+            -
+              value: '1'
+              newvalue: normalOperation
+            -
+              value: '2'
+              newvalue: trackingSearching
+            -
+              value: '3'
+              newvalue: antennaFaulty
+            -
+              value: '4'
+              newvalue: warmBoot
+            -
+              value: '5'
+              newvalue: coldBoot
+            -
+              value: '6'
+              newvalue: antennaShortcircuit
+        -
+          uuid: ceb04c2b2664438998bd1e95e605f62d
+          name: 'Meinberg mbgLtRefGpsState MAP'
+          mappings:
+            -
+              value: '0'
+              newvalue: notavailable
+            -
+              value: '1'
+              newvalue: synchronized
+            -
+              value: '2'
+              newvalue: notsynchronized
+  graphs:
+    -
+      uuid: cc93ccf953464224aa4e7b1ba158da23
+      name: 'NTP Clients'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'Meinberg LANTIME NG'
+            key: mbgLtNgNtpCCTodaysClients
+    -
+      uuid: c575e777acd3490f8971854235faef93
+      name: 'NTP Clock Stratum'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'Meinberg LANTIME NG'
+            key: mbgLtNgNtpStratum
+    -
+      uuid: b951429c15d64d9c8bf4ae7ac69263d0
+      name: 'NTP distance'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'Meinberg LANTIME NG'
+            key: mbgLtNgNtpRefclockOffset
+    -
+      uuid: 4ac82f6f346f49fbb8155ad13f7be08e
+      name: 'NTP Requests Per second'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 1A7C11
+          item:
+            host: 'Meinberg LANTIME NG'
+            key: mbgLtNgNtpCCTotalRequests
