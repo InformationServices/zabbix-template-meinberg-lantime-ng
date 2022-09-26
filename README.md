@@ -51,6 +51,7 @@ Some of the available triggers (also created via LLD):
 
 | Macros | Default | Description |
 | ------ | ------- | ----------- |
+| | | |
 
 ## How to Use
 
