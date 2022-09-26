@@ -1,10 +1,7 @@
 zabbix_export:
   version: '6.0'
-  date: '2022-09-26T08:57:35Z'
+  date: '2022-09-26T12:04:57Z'
   groups:
-    -
-      uuid: 5c54cb8f927a4c5a90622e1c7bd0bda5
-      name: NTP
     -
       uuid: 3d9f4d59536247f0a622967222082729
       name: Templates/NTP
@@ -23,6 +20,16 @@ zabbix_export:
         -
           name: Templates/NTP
       items:
+        -
+          uuid: 90fd617d1fc4479caab1cacd71a12daf
+          name: Firmware-Versions
+          type: HTTP_AGENT
+          key: mbgFWversions
+          delay: 24h
+          trends: '0'
+          value_type: TEXT
+          description: 'Get SW versions for all releases'
+          url: 'https://www.meinbergglobal.com/english/sw/firmware.htm'
         -
           uuid: 4057b36b175c41c5948cf511f9537d21
           name: 'Client tracking enabled'
@@ -43,10 +50,14 @@ zabbix_export:
           snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgFirmwareVersion.0'
           key: mbgLtNgFirmwareVersion
           delay: 1h
-          trends: '0'
-          value_type: TEXT
           description: 'installed LANTIME firmware version'
           inventory_link: OS_SHORT
+          preprocessing:
+            -
+              type: STR_REPLACE
+              parameters:
+                - .
+                - ''
           tags:
             -
               tag: Application
@@ -56,7 +67,6 @@ zabbix_export:
               uuid: b4df6ddc44e240d1aa910841513893a2
               expression: '(last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion,#1)<>last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion,#2))>0'
               name: 'Firmware Version Changed'
-              opdata: mbgLtNgFirmwareVersion
               priority: WARNING
               description: 'Firmware version has changed'
         -
@@ -209,6 +219,52 @@ zabbix_export:
               tag: Application
               value: Health
         -
+          uuid: 6c1879bc10544a7ea79b01a578f2ea81
+          name: LTOS-V6-Version
+          type: DEPENDENT
+          key: mbgLTOSv6version
+          delay: '0'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - 'LTOS V6 changelogs.*(\d\.\d+\.\d+)'
+                - \1
+            -
+              type: STR_REPLACE
+              parameters:
+                - .
+                - ''
+          master_item:
+            key: mbgFWversions
+          tags:
+            -
+              tag: Application
+              value: Info
+        -
+          uuid: aef0cd34480542e698dd7a0f6f3f686e
+          name: LTOS-V7-Version
+          type: DEPENDENT
+          key: mbgLTOSv7version
+          delay: '0'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - 'LTOS V7 changelogs.*(\d\.\d+\.\d+)'
+                - \1
+            -
+              type: STR_REPLACE
+              parameters:
+                - .
+                - ''
+          master_item:
+            key: mbgFWversions
+          tags:
+            -
+              tag: Application
+              value: Info
+        -
           uuid: bbd311f503be4abb84ccc2ff171f7b45
           name: 'Refclock Mode'
           type: SNMP_AGENT
@@ -251,6 +307,29 @@ zabbix_export:
             -
               tag: Application
               value: ReferenceClock
+        -
+          uuid: 0e1753c5ad1d441d956186ff3286ca5c
+          name: meinbergOS-Version
+          type: DEPENDENT
+          key: mbgMEINBERGOSversion
+          delay: '0'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - 'meinbergOS changelogs.*(\d{4}\.\d{1,2}\.\d{1,2})'
+                - \1
+            -
+              type: STR_REPLACE
+              parameters:
+                - .
+                - ''
+          master_item:
+            key: mbgFWversions
+          tags:
+            -
+              tag: Application
+              value: Info
       discovery_rules:
         -
           uuid: 2b56de70ce4c4cc8ba5dd6153043c29b
@@ -1137,6 +1216,28 @@ zabbix_export:
             -
               value: '2'
               newvalue: notsynchronized
+  triggers:
+    -
+      uuid: bf1b2beeea9c44b094586e0c96c1f2ff
+      expression: |
+        (
+        	(last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion)>=700000)
+        	and
+        	(last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion)<800000)
+        	and
+        	last(/Meinberg LANTIME NG/mbgLTOSv7version)>last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion)
+        )
+        or
+        (
+        	(last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion)>=600000)
+        	and
+        	(last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion)<700000)
+        	and
+        	last(/Meinberg LANTIME NG/mbgLTOSv6version)>last(/Meinberg LANTIME NG/mbgLtNgFirmwareVersion)
+        )
+      name: 'New Firmware Available'
+      priority: WARNING
+      description: 'Compare latest available LTOS-v7 version with the one currently installed'
   graphs:
     -
       uuid: cc93ccf953464224aa4e7b1ba158da23
