@@ -34,7 +34,7 @@ Out of the box Meinberg devices come with client tracking disabled. Thus it need
 
 In order to enable client tracking check the relevant document from https://www.meinbergglobal.com/english/docs/ and follow the procedure.
 
-F.e. for `Lantime M300 v7.06` look in the manual under __9.1.9.6 NTP Client List__
+F.e. for `Lantime M300 v7.08` look in the manual under __10.1.6.19 NTP Client List__
 
 After continuous logging is enabled the data for daily clients and requests per second will be populated
 
@@ -42,7 +42,7 @@ After continuous logging is enabled the data for daily clients and requests per 
 Currently there are LLD's configured for:
 
  * Fan (if installed) - Just the status (not available, error, ok)
- * Power supplies - Status of the power supply
+ * Power supplies - Status of the power supplies
  * Refclocks - Full status of the refclocks. This includes basic and extended status, type, use and others. The information differs based on refclock.
 
 ## Available Triggers
@@ -60,7 +60,8 @@ Some of the available triggers (also created via LLD):
 
 | Macros | Default | Description |
 | ------ | ------- | ----------- |
-| | | |
+| {$MBG_INTERNAL_TEMP_HIGH} | 62 | High temperature for the device |
+| {$MBG_INTERNAL_TEMP_CRITICAL} | 72 | Critical temperature for the device |
 
 ## How to Use
 
