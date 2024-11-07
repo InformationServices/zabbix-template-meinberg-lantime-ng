@@ -61,6 +61,14 @@ zabbix_export:
               name: 'Firmware Version Changed'
               priority: WARNING
               description: 'Firmware version has changed'
+        - uuid: f2d6df8ad0db4e13904fdb5bd66bbecf
+          name: 'Pending Alarms'
+          type: SNMP_AGENT
+          snmp_oid: 'MBG-SNMP-LTNG-MIB::mbgLtNgMisc.2.0'
+          key: mbgLtNgListOfPendingAlarms
+          delay: 5m
+          trends: '0'
+          description: 'List of pending alarms'
         - uuid: 7fdf22a1b6bc4cf3b1a4cb23459b296b
           name: 'Daily NTP Clients'
           type: SNMP_AGENT
@@ -859,6 +867,12 @@ zabbix_export:
               newvalue: mrsExtOscSync
             - value: '167'
               newvalue: mrsSyncE
+            - value: '168'
+              newvalue: mrsVideoInSync
+            - value: '169'
+              newvalue: mrsLtcSync
+            - value: '170'
+              newvalue: mrsOscSync
         - uuid: 369828afcbf74c6fb5ad6eefa3e0d80e
           name: 'Meinberg mbgLtNgRefclockType MAP'
           mappings:
@@ -1126,6 +1140,42 @@ zabbix_export:
               newvalue: vsg181h
             - value: '131'
               newvalue: gps182
+            - value: '132'
+              newvalue: rsc1000
+            - value: '133'
+              newvalue: gns182
+            - value: '134'
+              newvalue: gns182uc
+            - value: '135'
+              newvalue: gsr190
+            - value: '136'
+              newvalue: gen182
+            - value: '137'
+              newvalue: cpe182
+            - value: '138'
+              newvalue: fdm182
+            - value: '139'
+              newvalue: fdm182m
+            - value: '140'
+              newvalue: pzf182
+            - value: '141'
+              newvalue: pzf183
+            - value: '142'
+              newvalue: bpe8nnn
+            - value: '143'
+              newvalue: n2x185
+            - value: '144'
+              newvalue: anz141
+            - value: '145'
+              newvalue: msf182
+            - value: '146'
+              newvalue: rel1002
+            - value: '147'
+              newvalue: gps-gns183
+            - value: '148'
+              newvalue: gxl183
+            - value: '149'
+              newvalue: m3t
         - uuid: 575ac836834945b4a069da33fccd31aa
           name: 'Meinberg mbgLtNgRefclockUsage MAP'
           mappings:
